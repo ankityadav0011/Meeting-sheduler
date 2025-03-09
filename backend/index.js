@@ -1,5 +1,5 @@
 const express = require('express');
-const cors = require('cors'); // Import the cors package
+const cors = require('cors'); 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const meetingRoutes = require('./routes/meetingRoutes');
@@ -10,17 +10,17 @@ dotenv.config();
 
 const app = express();
 
-// Connect Database
+//database
 connectDB();
 
-// Enable CORS
+// CORS
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from this origin
-  credentials: true, // Allow cookies and credentials
+  origin: ['http://localhost:5174','http://localhost:5173','http://localhost:5172'], 
+  credentials: true, 
 }));
 
 
-// Init Middleware
+//Middleware
 app.use(express.json({ extended: false }));
 
 // Define Routes
