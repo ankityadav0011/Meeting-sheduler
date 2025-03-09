@@ -9,7 +9,7 @@ router.post('/', auth, meetingController.scheduleMeeting);
 
 router.get('/', auth, meetingController.getMeetings);
 
-router.get('/available-slots', auth, meetingController.getAvailableSlots);
+
 
 
 module.exports = router;
