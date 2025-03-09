@@ -15,40 +15,17 @@ const MeetingForm = () => {
     meetingLink: '', // New field for meeting link
   });
 
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [availableDates, setAvailableDates] = useState([]);
-  const [availableDays, setAvailableDays] = useState([]);
-  const [availableTimes, setAvailableTimes] = useState([]);
   const [scheduledMeetings, setScheduledMeetings] = useState([]); // For calendar view
 
   const navigate = useNavigate();
-
   const { user2, reason, date, day, time, duration, meetingLink } = formData;
 
-  // Fetch available slots and scheduled meetings from the backend
+  // Fetch scheduled meetings for the calendar view
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
 
-        // Fetch available slots
-        const availableSlotsRes = await axios.get('http://localhost:5000/api/meetings/available-slots', {
-          headers: {
-            'x-auth-token': token,
-          },
-        });
-        setAvailableSlots(availableSlotsRes.data);
-
-        // Extract unique dates, days, and times
-        const dates = [...new Set(availableSlotsRes.data.map((slot) => slot.date))];
-        const days = [...new Set(availableSlotsRes.data.map((slot) => slot.day))];
-        const times = [...new Set(availableSlotsRes.data.map((slot) => slot.time))];
-
-        setAvailableDates(dates);
-        setAvailableDays(days);
-        setAvailableTimes(times);
-
-        // Fetch scheduled meetings for the calendar view
         const scheduledMeetingsRes = await axios.get('http://localhost:5000/api/meetings', {
           headers: {
             'x-auth-token': token,
@@ -70,7 +47,7 @@ const MeetingForm = () => {
     try {
       const token = localStorage.getItem('token');
 
-      const res = await axios.post(
+      await axios.post(
         'http://localhost:5000/api/meetings',
         {
           user2,
@@ -78,8 +55,8 @@ const MeetingForm = () => {
           date,
           day,
           time,
-          duration, // Send duration as a string (no parsing)
-          meetingLink, // Send meeting link (optional)
+          duration,
+          meetingLink,
         },
         {
           headers: {
@@ -87,17 +64,12 @@ const MeetingForm = () => {
           },
         }
       );
-      alert("Meeting Successfully Sheduled")
+
+      alert("Meeting Successfully Scheduled");
       navigate('/dashboard');
     } catch (err) {
       console.error(err.response?.data || 'Meeting scheduling failed');
     }
-  };
-
-  // Function to highlight scheduled dates in the calendar
-  const highlightScheduledDates = (date) => {
-    const dayOfMonth = date.getDate();
-    return scheduledMeetings.some((meeting) => meeting.date === dayOfMonth);
   };
 
   return (
@@ -124,6 +96,7 @@ const MeetingForm = () => {
             required
             className="w-full p-2 border rounded-lg"
           />
+          {/* Show all possible dates (1-30) */}
           <select
             name="date"
             value={date}
@@ -132,12 +105,14 @@ const MeetingForm = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Select Date</option>
-            {availableDates.map((date) => (
-              <option key={date} value={date}>
-                {date}
+            {[...Array(30).keys()].map((date) => (
+              <option key={date + 1} value={date + 1}>
+                {date + 1}
               </option>
             ))}
           </select>
+
+          {/* Show all days (Sunday to Saturday) */}
           <select
             name="day"
             value={day}
@@ -146,12 +121,14 @@ const MeetingForm = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Select Day</option>
-            {availableDays.map((day) => (
+            {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
               <option key={day} value={day}>
                 {day}
               </option>
             ))}
           </select>
+
+          {/* Show all time slots (1 to 24) */}
           <select
             name="time"
             value={time}
@@ -160,12 +137,13 @@ const MeetingForm = () => {
             className="w-full p-2 border rounded-lg"
           >
             <option value="">Select Time</option>
-            {availableTimes.map((time) => (
-              <option key={time} value={time}>
-                {time}:00
+            {[...Array(24).keys()].map((time) => (
+              <option key={time + 1} value={time + 1}>
+                {time + 1}:00
               </option>
             ))}
           </select>
+
           <input
             type="text"
             placeholder="Duration (e.g., 1 hour 30 minutes)"
@@ -196,11 +174,11 @@ const MeetingForm = () => {
       <div className="w-full md:w-1/2">
         <h2 className="text-2xl font-bold mb-4">Scheduled Meetings</h2>
         <DatePicker
-          selected={null} // No date is selected
-          onChange={() => {}} // No action on date selection
-          inline // Show calendar inline
+          selected={null}
+          onChange={() => {}}
+          inline
           className="w-full p-2 border rounded-lg"
-          highlightDates={scheduledMeetings.map((meeting) => new Date(2023, 9, meeting.date))} // Highlight scheduled dates
+          highlightDates={scheduledMeetings.map((meeting) => new Date(2023, 9, meeting.date))}
           renderDayContents={(dayOfMonth, date) => {
             const isScheduled = scheduledMeetings.some(
               (meeting) => meeting.date === date.getDate()
